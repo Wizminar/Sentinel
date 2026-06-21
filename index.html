@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sentinel — Audit web security headers in seconds</title>
+<meta name="description" content="Sentinel checks a website for the six baseline HTTP security headers and explains what each one defends against, in plain English. Analyze. Detect. Harden." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="logo.ico" type="image/x-icon">
+</head>
+<body>
+
+<!-- ================= NAV ================= -->
+<nav class="nav" id="nav">
+  <div class="container nav-inner">
+    <a class="brand" href="#top" aria-label="Sentinel home">
+      <span class="mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2.5 4 5.5v6c0 4.8 3.4 8.4 8 10 4.6-1.6 8-5.2 8-10v-6L12 2.5Z"/>
+          <path d="m8.6 12 2.3 2.3L15.6 9.5"/>
+        </svg>
+      </span>
+      <span><b>Sentinel</b></span>
+    </a>
+
+    <div class="nav-links" id="navLinks">
+      <a class="link" href="#checks">Checks</a>
+      <a class="link" href="#how">How it works</a>
+      <a class="link" href="#about">About</a>
+      <a class="btn btn-ghost" href="https://github.com/wizminar" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1.5a10.5 10.5 0 0 0-3.32 20.46c.52.1.71-.23.71-.5l-.01-1.96c-2.9.63-3.52-1.24-3.52-1.24-.48-1.21-1.16-1.53-1.16-1.53-.95-.65.07-.64.07-.64 1.05.07 1.6 1.08 1.6 1.08.94 1.6 2.46 1.14 3.06.87.1-.68.37-1.14.66-1.4-2.32-.26-4.76-1.16-4.76-5.16 0-1.14.41-2.07 1.07-2.8-.1-.26-.46-1.32.1-2.75 0 0 .88-.28 2.88 1.07a9.9 9.9 0 0 1 5.24 0c2-1.35 2.87-1.07 2.87-1.07.57 1.43.21 2.49.11 2.75.67.73 1.07 1.66 1.07 2.8 0 4.01-2.45 4.89-4.78 5.15.38.32.71.95.71 1.93l-.01 2.86c0 .28.19.61.72.5A10.5 10.5 0 0 0 12 1.5Z"/></svg>
+        GitHub
+      </a>
+    </div>
+
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false"><span></span></button>
+  </div>
+</nav>
+
+<main>
+  <!-- ================= HERO ================= -->
+  <section class="hero" id="top">
+    <div class="container hero-grid">
+      <div>
+        <span class="hero-eyebrow"><span class="dot"></span>HTTP Security Audit</span>
+        <h1>Audit web security headers <span class="accent">in seconds.</span></h1>
+        <p class="hero-lead"><strong>Analyze. Detect. Harden.</strong> Sentinel checks any site for the six baseline HTTP security headers and explains what each one defends against — in plain English, no jargon.</p>
+
+        <div class="analyzer">
+          <div class="row">
+            <div class="input-wrap">
+              <span class="prefix" aria-hidden="true">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M21 21l-4.3-4.3"/><circle cx="11" cy="11" r="7"/></svg>
+              </span>
+              <input id="url" type="text" inputmode="url" placeholder="https://example.com" autocomplete="off" spellcheck="false" aria-label="Website URL to analyze" />
+            </div>
+            <button id="go" class="btn btn-primary go-btn">Analyze</button>
+          </div>
+          <div class="chips">
+            <span class="chips-label">Try:</span>
+            <button class="chip" data-url="https://github.com">github.com</button>
+            <button class="chip" data-url="https://developer.mozilla.org">developer.mozilla.org</button>
+            <button class="chip" data-url="https://example.com">example.com</button>
+          </div>
+          <div id="err" class="error" style="display:none" role="alert"></div>
+        </div>
+
+        <p class="hero-note">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 8h.01M11 12h1v4h1"/></svg>
+          <span>Browsers block cross-origin header reads, so requests route through a public lookup service (<code>allorigins.win</code>). Treat results as a quick check — not a full audit — and don't analyze sensitive URLs. Deploy the bundled backend for private, reliable results.</span>
+        </p>
+      </div>
+
+      <!-- signature: report-card inspector -->
+      <div class="inspector" id="heroInspector" aria-hidden="true">
+        <div class="insp-bar">
+          <span class="insp-dots"><i></i><i></i><i></i></span>
+          <span class="insp-url">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+            https://example.com
+          </span>
+          <span class="insp-tag">SAMPLE</span>
+        </div>
+
+        <div class="insp-summary">
+          <div class="insp-grade" style="color:var(--warning)">B</div>
+          <div class="meta">
+            <div><span class="score-num">4 / 6</span> headers present</div>
+            <div class="breakdown">
+              <span style="color:var(--success)"><i style="background:var(--success)"></i>4 present</span>
+              <span style="color:var(--warning)"><i style="background:var(--warning)"></i>1 weak</span>
+              <span style="color:var(--danger)"><i style="background:var(--danger)"></i>1 missing</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="insp-rows">
+          <div class="insp-row"><span class="hname">content-security-policy</span><span class="pill present">Present</span></div>
+          <div class="insp-row"><span class="hname">strict-transport-security</span><span class="pill present">Present</span></div>
+          <div class="insp-row"><span class="hname">x-content-type-options</span><span class="pill present">Present</span></div>
+          <div class="insp-row"><span class="hname">referrer-policy</span><span class="pill present">Present</span></div>
+          <div class="insp-row"><span class="hname">x-frame-options <b>· allow-from</b></span><span class="pill weak">Weak</span></div>
+          <div class="insp-row"><span class="hname">permissions-policy</span><span class="pill missing">Missing</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= LIVE RESULTS ================= -->
+  <section class="section results" id="results" style="display:none" aria-live="polite">
+    <div class="container">
+      <span class="eyebrow">Report</span>
+      <div class="results-card">
+        <div class="results-top">
+          <div id="badge" class="grade-badge">–</div>
+          <div class="results-meta">
+            <span class="target">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+              <span id="target">–</span>
+            </span>
+            <div class="score-line">Score: <b id="score">0 / 6</b> headers present</div>
+            <div class="breakdown-tags" id="breakdownTags"></div>
+          </div>
+          <div class="results-actions">
+            <button class="btn btn-ghost btn-sm" id="copyBtn">Copy report</button>
+            <button class="btn btn-ghost btn-sm" id="jsonBtn">Export JSON</button>
+          </div>
+        </div>
+        <div id="items" class="items"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CHECKS ================= -->
+  <section class="section" id="checks">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">What Sentinel checks</span>
+        <h2 class="section-title">Six headers. The baseline for any production site.</h2>
+        <p class="section-sub">Security headers are the cheapest defense a server has — they tell the browser how to behave. Missing or misconfigured headers are among the most common findings in real-world audits, because they're invisible to users and easy to overlook.</p>
+      </div>
+      <div class="grid-checks" id="checkGrid"><!-- injected --></div>
+    </div>
+  </section>
+
+  <!-- ================= HOW ================= -->
+  <section class="section" id="how" style="border-top:1px solid var(--border)">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">How it works</span>
+        <h2 class="section-title">Paste a URL. Get a graded report.</h2>
+        <p class="section-sub">No build step, no install, no account. Sentinel is plain HTML, CSS, and JavaScript — drop it on any static host.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <span class="num">STEP 01</span>
+          <h3>Paste a URL</h3>
+          <p>Enter any public website. Sentinel normalizes it to HTTPS and validates the address before sending a single request.</p>
+        </div>
+        <div class="step reveal">
+          <span class="num">STEP 02</span>
+          <h3>Fetch the headers</h3>
+          <p>The request is routed through a CORS proxy so the browser can read the response. Sentinel parses every header it gets back.</p>
+        </div>
+        <div class="step reveal">
+          <span class="num">STEP 03</span>
+          <h3>Read the grade</h3>
+          <p>Each header is scored Present, Weak, or Missing, with a plain-English note. The site gets a letter grade from A to F.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ABOUT ================= -->
+  <section class="section" id="about" style="border-top:1px solid var(--border)">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-body reveal">
+          <span class="eyebrow">About</span>
+          <h2 class="section-title">Closing the loop between building and breaking.</h2>
+          <p>Sentinel started as a single-file tool to answer one question quickly: <strong>is this site sending the security headers it should be?</strong> It grew out of my move from web development into security.</p>
+          <p>Web developers ship the apps. Security folks find the gaps. I've spent enough time on the building side to know how often headers get skipped — not out of negligence, but because they're invisible until someone goes looking. Sentinel is how I go looking.</p>
+          <p class="about-quote">"False confidence is worse than no check. A security tool should be honest about what it doesn't cover."</p>
+        </div>
+
+        <aside class="limits reveal">
+          <div class="limits-head">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2.5 19.5h19L12 3Z"/><path d="M12 10v4M12 17h.01"/></svg>
+            <h3>What Sentinel doesn't check</h3>
+          </div>
+          <ul>
+            <li>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/></svg>
+              <span><b>It's a snapshot.</b> One URL, one GET request. Headers can vary by route, method, or auth state.</span>
+            </li>
+            <li>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/></svg>
+              <span><b>It uses a public proxy.</b> The proxy sees the request, so don't analyze sensitive URLs. A production build would use a self-hosted backend.</span>
+            </li>
+            <li>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/></svg>
+              <span><b>It's a starting point.</b> Real audits also weigh CSP nonce strategy, HSTS preload eligibility, COOP/COEP, cookie flags, and TLS config.</span>
+            </li>
+          </ul>
+        </aside>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="f-brand">
+        <a class="brand" href="#top" aria-label="Sentinel home">
+          <span class="mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2.5 4 5.5v6c0 4.8 3.4 8.4 8 10 4.6-1.6 8-5.2 8-10v-6L12 2.5Z"/>
+              <path d="m8.6 12 2.3 2.3L15.6 9.5"/>
+            </svg>
+          </span>
+          <span><b>Sentinel</b></span>
+        </a>
+        <p class="f-tag">Surface security misconfigurations before attackers do. A lightweight HTTP security auditing tool.</p>
+      </div>
+
+      <div class="f-col">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="#checks">What it checks</a></li>
+          <li><a href="#how">How it works</a></li>
+          <li><a href="#top">Run an analysis</a></li>
+        </ul>
+      </div>
+
+      <div class="f-col">
+        <h4>Roadmap</h4>
+        <ul>
+          <li><a href="#about">Self-hosted backend <span class="soon">soon</span></a></li>
+          <li><a href="#about">Cookie flag analysis <span class="soon">soon</span></a></li>
+          <li><a href="#about">COOP / COEP / CORP <span class="soon">soon</span></a></li>
+        </ul>
+      </div>
+
+      <div class="f-col">
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="https://github.com/wizminar" target="_blank" rel="noopener">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1.5a10.5 10.5 0 0 0-3.32 20.46c.52.1.71-.23.71-.5l-.01-1.96c-2.9.63-3.52-1.24-3.52-1.24-.48-1.21-1.16-1.53-1.16-1.53-.95-.65.07-.64.07-.64 1.05.07 1.6 1.08 1.6 1.08.94 1.6 2.46 1.14 3.06.87.1-.68.37-1.14.66-1.4-2.32-.26-4.76-1.16-4.76-5.16 0-1.14.41-2.07 1.07-2.8-.1-.26-.46-1.32.1-2.75 0 0 .88-.28 2.88 1.07a9.9 9.9 0 0 1 5.24 0c2-1.35 2.87-1.07 2.87-1.07.57 1.43.21 2.49.11 2.75.67.73 1.07 1.66 1.07 2.8 0 4.01-2.45 4.89-4.78 5.15.38.32.71.95.71 1.93l-.01 2.86c0 .28.19.61.72.5A10.5 10.5 0 0 0 12 1.5Z"/></svg>
+            GitHub repo</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers" target="_blank" rel="noopener">MDN: HTTP headers</a></li>
+          <li><a href="https://owasp.org/www-project-secure-headers/" target="_blank" rel="noopener">OWASP Secure Headers</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span class="built">Built by <b>wizminar</b> — from shipping apps to finding the gaps.</span>
+      <span class="made">SENTINEL · STATIC · NO TRACKING</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ============================================================
+   Sentinel — analyzer logic
+   Header definitions + evaluation rules preserved from the MVP.
+   ============================================================ */
+const HEADERS = [
+  {
+    key: "content-security-policy",
+    name: "Content-Security-Policy",
+    short: "CSP",
+    defends: "Cross-site scripting (XSS)",
+    desc: "Tells the browser which sources of scripts, styles, and other resources are allowed. The strongest defense against XSS (cross-site scripting). Missing CSP means an injected script can run freely.",
+    icon: '<path d="M12 2.5 4 5.5v6c0 4.8 3.4 8.4 8 10 4.6-1.6 8-5.2 8-10v-6L12 2.5Z"/><path d="M9 12h6M12 9v6"/>',
+    evaluate(v) {
+      if (!v) return { status: "missing" };
+      const weak = /unsafe-inline|unsafe-eval|\*\s/i.test(v);
+      return { status: weak ? "weak" : "present", value: v };
+    }
+  },
+  {
+    key: "strict-transport-security",
+    name: "Strict-Transport-Security",
+    short: "HSTS",
+    defends: "HTTPS downgrade / MITM",
+    desc: "Forces browsers to use HTTPS for this site, even if the user types http://. Prevents downgrade and man-in-the-middle attacks on the connection.",
+    icon: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+    evaluate(v) {
+      if (!v) return { status: "missing" };
+      const m = /max-age=(\d+)/i.exec(v);
+      const age = m ? parseInt(m[1], 10) : 0;
+      const weak = age < 15552000; // ~6 months
+      return { status: weak ? "weak" : "present", value: v };
+    }
+  },
+  {
+    key: "x-frame-options",
+    name: "X-Frame-Options",
+    short: "XFO",
+    defends: "Clickjacking",
+    desc: "Stops other sites from embedding this page in an iframe, blocking clickjacking attacks (where an attacker tricks the user into clicking something on a hidden frame).",
+    icon: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="m14 13 3 3-3 3"/>',
+    evaluate(v) {
+      if (!v) return { status: "missing" };
+      const ok = /^(deny|sameorigin)$/i.test(v.trim());
+      return { status: ok ? "present" : "weak", value: v };
+    }
+  },
+  {
+    key: "x-content-type-options",
+    name: "X-Content-Type-Options",
+    short: "nosniff",
+    defends: "MIME-type sniffing",
+    desc: "Set to 'nosniff' to stop browsers from guessing a file's type. Prevents attacks where a file uploaded as one type gets interpreted (and executed) as another.",
+    icon: '<path d="M14 3v5h5"/><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z"/><path d="m9 14 2 2 4-4"/>',
+    evaluate(v) {
+      if (!v) return { status: "missing" };
+      const ok = /nosniff/i.test(v);
+      return { status: ok ? "present" : "weak", value: v };
+    }
+  },
+  {
+    key: "referrer-policy",
+    name: "Referrer-Policy",
+    short: "Referrer",
+    defends: "Leaking sensitive URLs",
+    desc: "Controls how much information about the current page is sent in the Referer header when the user clicks a link. Protects against leaking sensitive URLs to third parties.",
+    icon: '<path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1.5-1.5"/>',
+    evaluate(v) {
+      if (!v) return { status: "missing" };
+      return { status: "present", value: v };
+    }
+  },
+  {
+    key: "permissions-policy",
+    name: "Permissions-Policy",
+    short: "Permissions",
+    defends: "Unauthorized camera / mic / geo",
+    desc: "Restricts which browser features (camera, microphone, geolocation, etc.) the page or its iframes can use. Limits damage if part of the page is compromised.",
+    icon: '<path d="M12 2.5 4 5.5v6c0 4.8 3.4 8.4 8 10 4.6-1.6 8-5.2 8-10v-6L12 2.5Z"/><circle cx="12" cy="11" r="2.2"/><path d="M12 13.2V16"/>',
+    evaluate(v) {
+      if (!v) return { status: "missing" };
+      return { status: "present", value: v };
+    }
+  }
+];
+
+const $ = (id) => document.getElementById(id);
+const urlInput   = $("url");
+const goBtn      = $("go");
+const errBox     = $("err");
+const resultsBox = $("results");
+const itemsBox   = $("items");
+const badge      = $("badge");
+const scoreEl    = $("score");
+const targetEl   = $("target");
+const breakdownTags = $("breakdownTags");
+
+let lastReport = null; // for export/copy
+
+/* ---------- UI helpers ---------- */
+function showError(msg) { errBox.textContent = msg; errBox.style.display = "block"; }
+function clearError() { errBox.textContent = ""; errBox.style.display = "none"; }
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
+
+function normalizeUrl(raw) {
+  let u = (raw || "").trim();
+  if (!u) return null;
+  if (!/^https?:\/\//i.test(u)) u = "https://" + u;
+  try { return new URL(u).toString(); } catch { return null; }
+}
+
+/* ---------- fetch the target's response headers ----------
+   The browser's same-origin policy blocks reading another site's response
+   headers directly. Crucially, a plain CORS proxy does NOT solve this: even
+   when it forwards the headers, the browser only exposes a tiny safelist
+   (content-type, content-length, ...) to JavaScript — never CSP, HSTS, etc.
+   So reading res.headers off a proxy always reports those as missing.
+
+   The fix is to get the headers as DATA, not as response headers:
+
+   • "json" — your own backend (see sentinel-backend-worker.js). A server can
+              read every upstream header with no CORS limit and returns them in
+              a JSON body. Authoritative, private, no third party in the path.
+              Deploy it (2 min, free) and paste its URL into BACKEND below.
+   • "text" — zero-setup fallback: a public header-lookup API returns the
+              target's full headers as plain text, reached through a CORS proxy
+              so the browser can read the body. Subject to free-tier limits.
+
+   To use your own backend, set BACKEND to the full prefix ending in "?url="
+   e.g. "https://sentinel-headers.yourname.workers.dev/?url="                   */
+const BACKEND = "";
+
+// public header-lookup API; returns the target's raw response headers as text
+const HDR_API = (t) => "https://api.hackertarget.com/httpheaders/?q=" + encodeURIComponent(t);
+
+const SOURCES = [];
+if (BACKEND) SOURCES.push({ name: "your backend", mode: "json", url: (t) => BACKEND + encodeURIComponent(t) });
+SOURCES.push({ name: "allorigins", mode: "text",
+  url: (t) => "https://api.allorigins.win/get?url=" + encodeURIComponent(HDR_API(t)),
+  extract: async (r) => { const d = await r.json(); return d && d.contents; } });
+SOURCES.push({ name: "codetabs", mode: "text",
+  url: (t) => "https://api.codetabs.com/v1/proxy/?quest=" + encodeURIComponent(HDR_API(t)),
+  extract: (r) => r.text() });
+
+function fetchWithTimeout(url, ms) {
+  // No AbortSignal on purpose: some sandboxed / preview frames proxy fetch via
+  // postMessage, and an AbortSignal can't be structured-cloned — passing one
+  // throws "AbortSignal object could not be cloned" before the request is sent.
+  // We race a timer instead. (The request isn't hard-aborted, but that's fine.)
+  return Promise.race([
+    fetch(url, { cache: "no-store" }),
+    new Promise((_, reject) => setTimeout(() => reject(new Error("timed out")), ms)),
+  ]);
+}
+
+// Parse a raw HTTP header dump ("Name: value" per line) into a lowercased map.
+// Returns null for error blobs (e.g. rate-limit messages) so callers skip them.
+function parseHeaderText(text) {
+  if (!text || typeof text !== "string") return null;
+  if (/API count exceeded|error api query|invalid input|no records/i.test(text)) return null;
+  const map = {};
+  for (let line of text.split(/\r?\n/)) {
+    line = line.trim();
+    if (!line || /^HTTP\//i.test(line)) continue;       // skip the status line
+    const i = line.indexOf(":");
+    if (i < 1) continue;
+    const key = line.slice(0, i).trim().toLowerCase();
+    const val = line.slice(i + 1).trim();
+    if (key) map[key] = map[key] ? map[key] + ", " + val : val;
+  }
+  return map;
+}
+
+async function analyze(target) {
+  let lastErr = null;
+
+  for (const src of SOURCES) {
+    try {
+      const res = await fetchWithTimeout(src.url(target), 15000);
+      if (!res.ok) { lastErr = new Error(`${src.name} returned HTTP ${res.status}`); continue; }
+
+      let lookup = {};
+      if (src.mode === "json") {
+        const data = await res.json();
+        if (data && data.error) { lastErr = new Error(`${src.name}: ${data.error}`); continue; }
+        const hdrs = (data && data.headers) || {};
+        for (const k in hdrs) lookup[String(k).toLowerCase()] = hdrs[k];
+      } else { // "text" — a full header dump we can read as data
+        const text = await src.extract(res);
+        if (text && /API count exceeded/i.test(text)) { lastErr = new Error("rate_limited"); continue; }
+        lookup = parseHeaderText(text) || {};
+      }
+
+      // A genuine response always carries several headers (date, server, ...).
+      // If we got that, the result is authoritative — a site that truly lacks
+      // CSP/HSTS/etc. SHOULD score low. Too few keys means the lookup failed.
+      if (Object.keys(lookup).length >= 3) return { lookup, via: src.name };
+      lastErr = new Error(`${src.name} returned no readable headers`);
+    } catch (e) {
+      lastErr = (e && e.name === "AbortError") ? new Error(`${src.name} timed out`) : (e || new Error(`${src.name} failed`));
+    }
+  }
+
+  throw lastErr || new Error("Could not reach any header source.");
+}
+
+function gradeFor(score) {
+  return score >= 5 ? "A" : score >= 4 ? "B" : score >= 3 ? "C" : score >= 2 ? "D" : "F";
+}
+function gradeColor(grade) {
+  if (grade === "A" || grade === "B") return "var(--success)";
+  if (grade === "C") return "var(--warning)";
+  return "var(--danger)";
+}
+const labelFor = (s) => s === "present" ? "Present" : s === "weak" ? "Weak" : "Missing";
+
+/* ---------- render live results ---------- */
+function render(targetUrl, headers) {
+  itemsBox.innerHTML = "";
+  let present = 0, weak = 0, missing = 0;
+  const report = { target: targetUrl, generated: new Date().toISOString(), headers: [] };
+
+  for (const h of HEADERS) {
+    const raw = headers[h.key];
+    const result = h.evaluate(raw);
+    if (result.status === "present") present++;
+    else if (result.status === "weak") weak++;
+    else missing++;
+
+    report.headers.push({ header: h.name, status: result.status, value: result.value || null });
+
+    const valueBlock = result.value
+      ? `<div class="value">${escapeHtml(result.value)}</div>`
+      : "";
+    itemsBox.insertAdjacentHTML("beforeend", `
+      <div class="header-item">
+        <div class="top">
+          <span class="htitle">${escapeHtml(h.name)}</span>
+          <span class="pill ${result.status}">${labelFor(result.status)}</span>
+        </div>
+        <div class="desc">${escapeHtml(h.desc)}</div>
+        ${valueBlock}
+      </div>
+    `);
+  }
+
+  const score = present;
+  const grade = gradeFor(score);
+  report.score = score;
+  report.grade = grade;
+  report.summary = { present, weak, missing };
+  lastReport = report;
+
+  scoreEl.textContent = `${score} / ${HEADERS.length}`;
+  targetEl.textContent = targetUrl;
+  badge.textContent = grade;
+  badge.style.color = gradeColor(grade);
+
+  breakdownTags.innerHTML = `
+    <span class="pill present">${present} present</span>
+    ${weak ? `<span class="pill weak">${weak} weak</span>` : ""}
+    ${missing ? `<span class="pill missing">${missing} missing</span>` : ""}
+  `;
+
+  resultsBox.style.display = "block";
+  // smooth fade-up, consistent with the rest of the page's reveal animation
+  const card = resultsBox.querySelector(".results-card");
+  if (card) {
+    card.classList.add("reveal");
+    card.classList.remove("in");
+    void card.offsetWidth; // force reflow so the transition replays each run
+    requestAnimationFrame(() => card.classList.add("in"));
+  }
+  resultsBox.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/* ---------- run ---------- */
+function setLoading(on) {
+  goBtn.disabled = on;
+  goBtn.innerHTML = on ? '<span class="spinner"></span>Analyzing…' : "Analyze";
+}
+function prettyHost(u) { try { return new URL(u).hostname; } catch { return u; } }
+function friendlyError(e) {
+  const m = (e && e.message) || "";
+  if (/rate_limited|count exceeded/i.test(m))
+    return "The free header-lookup service is rate-limited right now. Give it a minute — or deploy the bundled backend (sentinel-backend-worker.js) for unlimited, reliable checks.";
+  if (/Failed to fetch|NetworkError|Load failed|ERR_/i.test(m))
+    return "Couldn't reach the header source. If you opened this page as a file (file://), serve it over http or deploy it — the proxies need a real origin to work.";
+  if (/timed out/i.test(m)) return "The request timed out. The source may be busy — give it another go.";
+  if (/no readable headers|Could not reach|HTTP \d/i.test(m))
+    return "Couldn't read this site's headers through the public lookup. Free services are best-effort — for reliable results, deploy the bundled backend (sentinel-backend-worker.js).";
+  return m || "Something went wrong. Try again in a moment.";
+}
+
+async function run() {
+  clearError();
+  resultsBox.style.display = "none";
+  const target = normalizeUrl(urlInput.value);
+  if (!target) { showError("That doesn't look like a valid URL — try something like https://example.com"); return; }
+
+  setLoading(true);
+  try {
+    const out = await analyze(target);
+    render(target, out.lookup);
+  } catch (e) {
+    showError(friendlyError(e));
+  } finally {
+    setLoading(false);
+  }
+}
+
+goBtn.addEventListener("click", run);
+urlInput.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); });
+
+document.querySelectorAll(".chip").forEach((chip) => {
+  chip.addEventListener("click", () => {
+    urlInput.value = chip.getAttribute("data-url");
+    run();
+  });
+});
+
+/* ---------- export / copy (delivers a roadmap item) ---------- */
+function reportToMarkdown(r) {
+  const lines = [];
+  lines.push(`# Sentinel report — ${r.target}`);
+  lines.push(``);
+  lines.push(`**Grade:** ${r.grade}  ·  **Score:** ${r.score} / 6`);
+  lines.push(`**Present:** ${r.summary.present}  ·  **Weak:** ${r.summary.weak}  ·  **Missing:** ${r.summary.missing}`);
+  lines.push(``);
+  lines.push(`| Header | Status | Value |`);
+  lines.push(`|---|---|---|`);
+  for (const h of r.headers) {
+    lines.push(`| ${h.header} | ${labelFor(h.status)} | ${h.value ? h.value.replace(/\|/g, "\\|") : "—"} |`);
+  }
+  lines.push(``);
+  lines.push(`_Generated by Sentinel · ${r.generated}_`);
+  return lines.join("\n");
+}
+
+function flash(btn, text) {
+  const original = btn.textContent;
+  btn.textContent = text;
+  setTimeout(() => { btn.textContent = original; }, 1400);
+}
+
+$("copyBtn").addEventListener("click", async () => {
+  if (!lastReport) return;
+  try {
+    await navigator.clipboard.writeText(reportToMarkdown(lastReport));
+    flash($("copyBtn"), "Copied ✓");
+  } catch { flash($("copyBtn"), "Copy failed"); }
+});
+
+$("jsonBtn").addEventListener("click", () => {
+  if (!lastReport) return;
+  const blob = new Blob([JSON.stringify(lastReport, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  let host = "report";
+  try { host = new URL(lastReport.target).hostname; } catch {}
+  a.href = URL.createObjectURL(blob);
+  a.download = `sentinel-${host}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(a.href);
+});
+
+/* ============================================================
+   Page chrome: build checks grid, nav, reveals, hero animation
+   ============================================================ */
+document.documentElement.classList.add("js");
+
+// build the "what Sentinel checks" grid from the same source of truth
+const checkGrid = $("checkGrid");
+HEADERS.forEach((h) => {
+  checkGrid.insertAdjacentHTML("beforeend", `
+    <article class="check-card reveal">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${h.icon}</svg></div>
+      <div class="cname">${escapeHtml(h.name)}</div>
+      <p class="cdef">${escapeHtml(h.desc)}</p>
+      <span class="defends">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2.5 19.5h19L12 3Z"/><path d="M12 10v4M12 17h.01"/></svg>
+        defends: ${escapeHtml(h.defends)}
+      </span>
+    </article>
+  `);
+});
+
+// sticky nav border on scroll
+const nav = $("nav");
+const onScroll = () => nav.classList.toggle("scrolled", window.scrollY > 8);
+onScroll();
+window.addEventListener("scroll", onScroll, { passive: true });
+
+// mobile menu
+const navToggle = $("navToggle");
+const navLinks = $("navLinks");
+navToggle.addEventListener("click", () => {
+  const open = navLinks.classList.toggle("open");
+  navToggle.setAttribute("aria-expanded", open ? "true" : "false");
+});
+navLinks.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => {
+  navLinks.classList.remove("open");
+  navToggle.setAttribute("aria-expanded", "false");
+}));
+
+// scroll-reveal
+const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+if (!reduce && "IntersectionObserver" in window) {
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+  }, { threshold: 0.14 });
+  document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
+} else {
+  document.querySelectorAll(".reveal").forEach((el) => el.classList.add("in"));
+}
+
+// play hero inspector animation once it's visible
+const heroInspector = $("heroInspector");
+if (!reduce && "IntersectionObserver" in window) {
+  const hi = new IntersectionObserver((entries) => {
+    entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("play"); hi.unobserve(e.target); } });
+  }, { threshold: 0.3 });
+  hi.observe(heroInspector);
+} else {
+  heroInspector.classList.add("play");
+}
+</script>
+</body>
+</html>
