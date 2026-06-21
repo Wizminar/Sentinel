@@ -1,6 +1,5 @@
 # Sentinel
-[Try Sentinel](https://sentinel.mohitupawar.com/)
-
+[Visit our Website (opens in a new tab via Ctrl+Click)](https://sentinel.mohitupawar.com/)
 # HTTP Security Headers Analyzer
 
 A lightweight, single-page web tool to check whether a website is sending the baseline HTTP security headers — and what each one actually does, in plain English.
