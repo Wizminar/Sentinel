@@ -1,0 +1,16 @@
+{
+  "name": "@sentinel/worker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "npm run build -w @sentinel/core && npm run build -w @sentinel/web && wrangler deploy"
+  },
+  "dependencies": {
+    "@sentinel/core": "*"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241205.0",
+    "wrangler": "^3.95.0"
+  }
+}

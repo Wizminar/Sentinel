@@ -1,0 +1,36 @@
+name: "Sentinel security headers"
+description: "Grade your site's HTTP security headers (CSP, HSTS, cookies, CORS…) and fail the build when they regress."
+author: "wizminar"
+branding:
+  icon: "shield"
+  color: "blue"
+inputs:
+  urls:
+    description: "One or more URLs to scan, separated by spaces, commas or newlines."
+    required: true
+  fail-under:
+    description: "Fail the step if any URL grades below this (e.g. B, A-). Leave empty to never fail."
+    required: false
+    default: ""
+  sarif-file:
+    description: "Write findings as SARIF to this path, for github/codeql-action/upload-sarif."
+    required: false
+    default: ""
+  allow-private:
+    description: "Allow localhost and private IPs, e.g. a server started earlier in the job."
+    required: false
+    default: "false"
+  fix:
+    description: "Print a config snippet that fixes failures: nginx, apache, caddy, express, vercel, netlify or cloudflare."
+    required: false
+    default: ""
+outputs:
+  grade:
+    description: "The lowest grade across all scanned URLs."
+  score:
+    description: "The score (0–100+) of the lowest-graded URL."
+  report:
+    description: "JSON array of { url, grade, score } for every URL."
+runs:
+  using: "node24"
+  main: "action/index.mjs"

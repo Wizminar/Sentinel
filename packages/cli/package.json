@@ -1,0 +1,19 @@
+{
+  "name": "sentinel-scan",
+  "version": "2.0.0",
+  "description": "Grade a site's HTTP security headers from the terminal or CI. Fails the build when they regress.",
+  "license": "MIT",
+  "type": "module",
+  "bin": { "sentinel-scan": "./dist/cli.js" },
+  "files": ["dist"],
+  "engines": { "node": ">=18.17" },
+  "keywords": ["security", "http-headers", "csp", "hsts", "cli", "ci", "sarif"],
+  "scripts": {
+    "build": "esbuild src/cli.ts --bundle --platform=node --format=esm --target=node18 --outfile=dist/cli.js --banner:js='#!/usr/bin/env node' && esbuild src/action.ts --bundle --platform=node --format=esm --target=node20 --outfile=../../action/index.mjs"
+  },
+  "devDependencies": {
+    "@sentinel/core": "*",
+    "@types/node": "^22.10.0",
+    "esbuild": "^0.24.0"
+  }
+}

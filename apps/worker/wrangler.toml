@@ -1,0 +1,24 @@
+# Sentinel: one Worker serves the web app (static assets) and the scan API.
+name = "sentinel"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+
+# The built web app. Requests that match a file are served directly;
+# everything else (/api/*, /badge) reaches the Worker.
+[assets]
+directory = "../web/dist"
+binding = "ASSETS"
+
+[vars]
+# Extra origins allowed to call /api/scan from a browser (comma-separated).
+# Same-origin calls from the bundled web app always work.
+ALLOWED_ORIGINS = "http://localhost:5173"
+
+# 20 scans per minute per client IP. Remove this block to disable.
+[[unsafe.bindings]]
+name = "RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1001"
+simple = { limit = 20, period = 60 }
+
+# routes = [{ pattern = "sentinel.example.com", custom_domain = true }]

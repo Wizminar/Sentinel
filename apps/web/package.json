@@ -1,0 +1,18 @@
+{
+  "name": "@sentinel/web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@fontsource-variable/martian-mono": "^5.1.0",
+    "@fontsource-variable/schibsted-grotesk": "^5.1.0",
+    "@sentinel/core": "*"
+  },
+  "devDependencies": {
+    "vite": "^5.4.11"
+  }
+}

@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: Action bundle is up to date
+        run: git diff --exit-code action/index.mjs || (echo "::error::Run 'npm run build' and commit action/index.mjs" && exit 1)
+
+  dogfood:
+    # Scan our own production site with our own Action. Non-blocking until the domain is live.
+    needs: test
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./
+        with:
+          urls: https://sentinel.mohitupawar.com
+          fail-under: A

@@ -1,0 +1,26 @@
+{
+  "name": "sentinel",
+  "private": true,
+  "description": "HTTP security header scanner: web app, edge API, CLI and GitHub Action sharing one analysis engine.",
+  "license": "MIT",
+  "type": "module",
+  "workspaces": [
+    "packages/core",
+    "packages/cli",
+    "apps/worker",
+    "apps/web"
+  ],
+  "scripts": {
+    "build": "npm run build -w @sentinel/core && npm run build -w sentinel-scan && npm run build -w @sentinel/web && npm run build:root",
+    "test": "vitest run",
+    "typecheck": "tsc -p packages/core --noEmit && tsc -p packages/cli --noEmit && tsc -p apps/worker --noEmit && tsc -p apps/web --noEmit",
+    "dev": "npm run dev -w @sentinel/web",
+    "dev:worker": "npm run dev -w @sentinel/worker",
+    "deploy:worker": "npm run deploy -w @sentinel/worker",
+    "build:root": "rm -rf assets && cp -R apps/web/dist/. ."
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8"
+  }
+}

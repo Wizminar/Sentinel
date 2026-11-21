@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sentinel — HTTP security header scanner</title>
+  <meta name="description" content="Sentinel reads a site's HTTP response headers, grades them like a security reviewer would, and gives you the exact config lines to fix what's missing." />
+  <meta name="color-scheme" content="light dark" />
+  <meta property="og:title" content="Sentinel — HTTP security header scanner" />
+  <meta property="og:description" content="Paste a URL. See its response headers marked up like a proof, with the fixes written out." />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="alternate icon" href="/logo.ico" />
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="masthead">
+    <div class="wrap masthead-inner">
+      <a class="brand" href="/" aria-label="Sentinel home">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 4.5 7.5 7.7v6.6c0 5.3 3.6 9.2 8.5 10.9 4.9-1.7 8.5-5.6 8.5-10.9V7.7L16 4.5Z"/><path d="m12.2 15.4 2.7 2.7 5.1-5.2"/></svg>
+        Sentinel
+      </a>
+      <nav class="nav" aria-label="Primary">
+        <a href="#method">How grading works</a>
+        <a href="#ci">CLI and GitHub Action</a>
+        <a href="https://github.com/Wizminar/Sentinel" rel="noopener">Source</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero wrap" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <h1 id="hero-title">Read what your server tells the browser.</h1>
+        <p class="lede">Sentinel fetches a page, reads its response headers, and marks up every missing or risky one — with the line you need to add.</p>
+
+        <form class="scan" id="scan-form" novalidate>
+          <label class="visually-hidden" for="url">Website address</label>
+          <input id="url" name="url" type="text" inputmode="url" autocomplete="url" spellcheck="false" placeholder="your-site.com" required />
+          <button type="submit" id="scan-btn">Scan headers</button>
+        </form>
+        <p class="examples">Or try
+          <button type="button" class="example" data-url="github.com">github.com</button>,
+          <button type="button" class="example" data-url="developer.mozilla.org">mozilla.org</button> or
+          <button type="button" class="example" data-url="example.com">example.com</button>
+        </p>
+        <p class="scan-error" id="scan-error" role="alert" hidden></p>
+      </div>
+
+      <figure class="proof" id="proof" aria-labelledby="proof-caption">
+        <figcaption id="proof-caption" class="proof-caption">Sample: a typical Express app, proofread</figcaption>
+        <div class="sheet" id="sheet" aria-live="polite"></div>
+      </figure>
+    </section>
+
+    <section class="report wrap" id="report" aria-labelledby="report-title" hidden>
+      <div class="report-head">
+        <h2 id="report-title"></h2>
+        <p class="report-sub" id="report-sub"></p>
+      </div>
+
+      <div class="report-grid">
+        <div>
+          <h3 class="block-title">Every check</h3>
+          <ul class="checks" id="checks"></ul>
+        </div>
+
+        <aside class="side">
+          <section class="fix" aria-labelledby="fix-title">
+            <h3 class="block-title" id="fix-title">Fix it in your config</h3>
+            <div class="tabs" role="tablist" id="fix-tabs" aria-label="Server platform"></div>
+            <pre class="code" id="fix-code" tabindex="0"></pre>
+            <p class="fix-note" id="fix-note"></p>
+            <button type="button" class="quiet" id="copy-fix">Copy config</button>
+          </section>
+
+          <section class="share" aria-labelledby="share-title">
+            <h3 class="block-title" id="share-title">Share and export</h3>
+            <div class="share-row">
+              <button type="button" class="quiet" id="copy-link">Copy link to this report</button>
+            </div>
+            <div class="badge-block" id="badge-block" hidden>
+              <p>Add a live grade badge to your README:</p>
+              <img id="badge-img" alt="" height="20" />
+              <pre class="code small" id="badge-code" tabindex="0"></pre>
+              <button type="button" class="quiet" id="copy-badge">Copy Markdown</button>
+            </div>
+            <div class="share-row">
+              <button type="button" class="quiet" data-export="json">Download JSON</button>
+              <button type="button" class="quiet" data-export="md">Markdown</button>
+              <button type="button" class="quiet" data-export="sarif">SARIF</button>
+            </div>
+          </section>
+        </aside>
+      </div>
+    </section>
+
+    <section class="method wrap" id="method" aria-labelledby="method-title">
+      <div class="prose">
+        <h2 id="method-title">How grading works</h2>
+        <p>Every site starts at 100. Each check takes points away for what's missing or misconfigured, up to a limit, so one bad header can't outweigh everything else. Bonuses for extra-strong setups only count once a site is already at 90 or above — they reward polish, they can't hide a gap.</p>
+        <p>Some problems cap the grade regardless of the arithmetic: a page served over plain HTTP can't score above D, and a server that lets any site read logged-in users' data gets an F.</p>
+      </div>
+
+      <table class="weights">
+        <caption class="visually-hidden">Points each check can remove or add</caption>
+        <thead><tr><th scope="col">Check</th><th scope="col">Protects against</th><th scope="col" class="num">Up to</th><th scope="col" class="num">Bonus</th></tr></thead>
+        <tbody id="weights"></tbody>
+      </table>
+
+      <ol class="scale" id="scale" aria-label="Grade thresholds"></ol>
+    </section>
+
+    <section class="ci wrap" id="ci" aria-labelledby="ci-title">
+      <div class="prose">
+        <h2 id="ci-title">Catch regressions before they ship</h2>
+        <p>The same engine runs as a command-line tool and a GitHub Action. Point it at a preview deploy and the build fails when someone drops a header. Findings show up as annotations on the pull request, or as SARIF in GitHub code scanning.</p>
+      </div>
+      <div class="ci-grid">
+        <figure>
+          <figcaption>Terminal</figcaption>
+<pre class="code" tabindex="0"><span class="c"># grade a site, fail below B</span>
+npx sentinel-scan https://your-site.com --fail-under B
+
+<span class="c"># get the nginx lines that fix it</span>
+npx sentinel-scan your-site.com --fix nginx
+
+<span class="c"># grade headers you already have</span>
+curl -sI https://your-site.com | npx sentinel-scan --stdin</pre>
+        </figure>
+        <figure>
+          <figcaption>.github/workflows/headers.yml</figcaption>
+<pre class="code" tabindex="0">on: [deployment_status]
+jobs:
+  headers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: Wizminar/Sentinel@v2
+        with:
+          urls: ${{ github.event.deployment_status.target_url }}
+          fail-under: B
+          sarif-file: sentinel.sarif
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: sentinel.sarif</pre>
+        </figure>
+      </div>
+    </section>
+
+    <section class="limits wrap" aria-labelledby="limits-title">
+      <h2 id="limits-title">What a header scan can't see</h2>
+      <ul>
+        <li><strong>One response.</strong> Sentinel checks the URL you give it, with one GET request and no login. Other routes, API responses and signed-in pages can send different headers.</li>
+        <li><strong>Policies set in HTML.</strong> A CSP in a <code>&lt;meta&gt;</code> tag isn't read. Neither is anything set by JavaScript after load.</li>
+        <li><strong>Everything below HTTP.</strong> TLS versions, ciphers, certificates and DNS records need their own tools.</li>
+        <li><strong>Your actual code.</strong> A perfect CSP doesn't remove an XSS bug; it makes it much harder to exploit. Headers are one layer.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <p>Built by <a href="https://github.com/Wizminar" rel="noopener">wizminar</a>. Open source under the MIT license.</p>
+      <p>References: <a href="https://owasp.org/www-project-secure-headers/" rel="noopener">OWASP Secure Headers</a>, <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers" rel="noopener">MDN</a>, <a href="https://csp-evaluator.withgoogle.com/" rel="noopener">CSP Evaluator</a></p>
+    </div>
+  </footer>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

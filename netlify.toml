@@ -1,0 +1,12 @@
+# One Netlify site serves everything: the web app (static) and the scan API +
+# badges (a Netlify Function wrapping the same handler as the Cloudflare Worker).
+[build]
+  command = "npm run build -w @sentinel/core && npm run build -w @sentinel/web"
+  publish = "apps/web/dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
