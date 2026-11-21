@@ -4,7 +4,7 @@
 
 A lightweight, single-page web tool to check whether a website is sending the baseline HTTP security headers — and what each one actually does, in plain English.
 
-**Live demo:** [add your URL]
+**Live demo:** https://sentinel.mohitupawar.com
 
 ## Why this matters
 
